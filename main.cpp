@@ -7,6 +7,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <string>
+#include <QSet>
 
 #include "processrunner.h"
 #include "minidumpxmlreader.h"
@@ -28,8 +29,8 @@ bool readConfig(const QString& appName, const bool is64Bit, CdbConfig* config);
 
 GlobalConfig g_config;
 
-void writeUuids(const QString& filename, const QStringList& uuidList);
-void readUuids(const QString& filename, QStringList& outUuidList);
+void writeUuids(const QString& filename, const QSet<QString> &uuidList);
+void readUuids(const QString& filename, QSet<QString> &outUuidList);
 
 QString normalizePath(const QString& path){
     return QDir::toNativeSeparators(QFileInfo(path).absoluteFilePath());
@@ -76,11 +77,11 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    QStringList parsedCrashes;
+    QSet<QString> parsedCrashes;
 
     readUuids(ParsedFilePath, parsedCrashes);
 
-    QStringList corruptedCrashes;
+    QSet<QString> corruptedCrashes;
 
 
     int counter = 0;
@@ -291,18 +292,25 @@ bool readGlobalConfig(GlobalConfig* config)
     return result;
 }
 
-void writeUuids(const QString& filename, const QStringList& uuidList)
+void writeUuids(const QString& filename, const QSet<QString>& uuidList)
 {
     if(uuidList.isEmpty()){
         return;
     }
+    if( QFileInfo(filename).exists() ){
+        QFile fn(filename);
+        fn.remove();
+    }
 
     QFile file(filename);
-    if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append)){
+    if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)){
         QTextStream stream(&file);
         stream.setCodec("UTF-8");
         foreach (const QString& uuid, uuidList) {
-            stream<<uuid<<"\r\n";
+            if(uuid.isNull() || uuid.isEmpty()){
+                continue;
+            }
+            stream<<uuid<<"\n";
         }
     }
     else{
@@ -311,7 +319,7 @@ void writeUuids(const QString& filename, const QStringList& uuidList)
     file.close();
 }
 
-void readUuids(const QString& filename, QStringList& outUuidList)
+void readUuids(const QString& filename, QSet<QString>& outUuidList)
 {
     if(filename.isEmpty()){
         return;
@@ -329,7 +337,7 @@ void readUuids(const QString& filename, QStringList& outUuidList)
         QString line;
         do {
             line = stream.readLine();
-            outUuidList.push_back(line);
+            outUuidList.insert(line);
         } while (!line.isNull());
     }
     else{
