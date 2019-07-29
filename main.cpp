@@ -8,6 +8,7 @@
 #include <QDir>
 #include <string>
 #include <QSet>
+#include <QVersionNumber>
 
 #include "processrunner.h"
 #include "minidumpxmlreader.h"
@@ -117,7 +118,7 @@ int main(int argc, char *argv[])
             ok = xmlReader.read(&file);
             if(!ok){
                 std::wcerr<<"Cannot parse xml file:"<<xmlPath.toStdWString()<<std::endl;
-            }
+            }            
         }
 
         //read config for app
@@ -129,30 +130,43 @@ int main(int argc, char *argv[])
             }
         }
 
-        //analize dump
-        QString miniDumpPath = QString("%1/crashdump.dmp")
-                .arg(folder);
 
-        cdbConfig.MiniDumpPath = normalizePath(miniDumpPath);
-
-        QString logPathFolder = reportsFodler;
-        if(logPathFolder.isEmpty()){
-            logPathFolder = folder;
+        //check min version
+        if(!cdbConfig.MinVersion.isEmpty()){
+            //isNew = (Version::compareVersion(version, _currentVersion) == 1);
+            QVersionNumber minimumVersion = QVersionNumber::fromString(cdbConfig.MinVersion);
+            QVersionNumber dumpVersion = QVersionNumber::fromString(miniDump.AppVersion);
+            const int compare = QVersionNumber::compare(dumpVersion, minimumVersion);
+            ok = (compare > 0);
+            if(!ok){
+                std::wcerr<<"Minimum version for app:"<<cdbConfig.MinVersion.toStdWString();
+            }
         }
-
-        logPathFolder.append(QString("/%1").arg(miniDump.AppName));
-        if (!QFile::exists(logPathFolder)) {
-            QDir dir;
-            dir.mkpath(logPathFolder);
-        }
-
-        QString logPath = QString("%1/%2_report.txt")
-                .arg(logPathFolder)
-                .arg(crashrptInfo.completeBaseName());
-
-        cdbConfig.LogPath = normalizePath(logPath);
 
         if(ok){
+            //analize dump
+            QString miniDumpPath = QString("%1/crashdump.dmp")
+                    .arg(folder);
+
+            cdbConfig.MiniDumpPath = normalizePath(miniDumpPath);
+
+            QString logPathFolder = reportsFodler;
+            if(logPathFolder.isEmpty()){
+                logPathFolder = folder;
+            }
+
+            logPathFolder.append(QString("/%1").arg(miniDump.AppName));
+            if (!QFile::exists(logPathFolder)) {
+                QDir dir;
+                dir.mkpath(logPathFolder);
+            }
+
+            QString logPath = QString("%1/%2_report.txt")
+                    .arg(logPathFolder)
+                    .arg(crashrptInfo.completeBaseName());
+
+            cdbConfig.LogPath = normalizePath(logPath);
+
             ok = handleCDB(&cdbConfig);
         }
 

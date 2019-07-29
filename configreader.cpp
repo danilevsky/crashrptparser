@@ -11,6 +11,7 @@ namespace json {
     const QString SymbolsPath() { return "symbols_path";}
     const QString SrcPath() { return "src_path"; }
     const QString ImagePath() { return "image_path"; }
+    const QString MinVersion() { return "min_ver"; }
 }
 
 ConfigReader::ConfigReader(CdbConfig *config, const bool is64bit):m_config(config),m_is64bit(is64bit)
@@ -54,6 +55,10 @@ bool ConfigReader::read(QIODevice *device)
 
         if(cfgObj.contains(json::ImagePath())){
             m_config->ImagePath = cfgObj.value(json::ImagePath()).toString();
+        }
+
+        if(cfgObj.contains(json::MinVersion())){
+            m_config->MinVersion = cfgObj.value(json::MinVersion()).toString();
         }
 
         ok = true;

@@ -10,6 +10,7 @@ struct CdbConfig
     QString SrcPath;
     QString LogPath;
     QString ImagePath;
+    QString MinVersion;
 };
 
 #endif // CDBCONFIG_H
