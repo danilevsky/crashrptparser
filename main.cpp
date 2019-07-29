@@ -132,16 +132,16 @@ int main(int argc, char *argv[])
 
 
         //check min version
-        if(!cdbConfig.MinVersion.isEmpty()){
-            //isNew = (Version::compareVersion(version, _currentVersion) == 1);
-            QVersionNumber minimumVersion = QVersionNumber::fromString(cdbConfig.MinVersion);
-            QVersionNumber dumpVersion = QVersionNumber::fromString(miniDump.AppVersion);
-            const int compare = QVersionNumber::compare(dumpVersion, minimumVersion);
-            ok = (compare > 0);
-            if(!ok){
-                std::wcerr<<"Minimum version for app:"<<cdbConfig.MinVersion.toStdWString();
-            }
-        }
+//        if(!cdbConfig.MinVersion.isEmpty()){
+//            //isNew = (Version::compareVersion(version, _currentVersion) == 1);
+//            QVersionNumber minimumVersion = QVersionNumber::fromString(cdbConfig.MinVersion);
+//            QVersionNumber dumpVersion = QVersionNumber::fromString(miniDump.AppVersion);
+//            const int compare = QVersionNumber::compare(dumpVersion, minimumVersion);
+//            ok = (compare > 0);
+//            if(!ok){
+//                std::wcerr<<"Minimum version for app:"<<cdbConfig.MinVersion.toStdWString();
+//            }
+//        }
 
         if(ok){
             //analize dump
